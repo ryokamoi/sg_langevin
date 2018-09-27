@@ -5,6 +5,8 @@ import numpy as np
 size = 100
 
 def make_dataset():
+    np.random.seed(1202)
+
     for type in ["train", "validation"]:
         if not os.path.isdir("dataset/"):
             os.makedirs("dataset/")
