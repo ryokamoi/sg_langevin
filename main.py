@@ -1,5 +1,3 @@
-
-
 import os
 import shutil
 import argparse
@@ -9,6 +7,7 @@ import tensorflow as tf
 
 import model
 from get_dataset import get_dataset
+from visualizer import Visualizer
 
 tf.enable_eager_execution()
 
@@ -20,6 +19,8 @@ args = parser.parse_args()
 tf.set_random_seed(1202)
 
 def main():
+    # train logistic regression with stocastic gradient Langevin Gradient
+
     if not os.path.isdir("log/"):
         os.makedirs("log/")
     now = datetime.datetime.today()
@@ -33,9 +34,9 @@ def main():
 
     # read hyperparameters from file
     hparams = tf.contrib.training.HParams(
-                lr=0.01,
+                lr=0.1,
                 model="SGLD_LR",
-                epoch=100,
+                epoch=30,
                 batch_size=10)
 
     if args.hparams:
@@ -55,6 +56,8 @@ def main():
     else:
         raise "Invalid parameter for hparams.model"
 
+    visualizer = Visualizer()
+
     # train
     epsilon_ = hparams.lr
     step = 0
@@ -71,6 +74,8 @@ def main():
             loss = nn.loss(data["data"], data["label"]).numpy()
             accuracy = nn.accuracy(data["data"], data["label"]).numpy()
 
+            visualizer.store_results(nn)
+
             nn.update(data["data"], data["label"], epsilon, train_dataset_size)
 
             with tf.contrib.summary.record_summaries_every_n_global_steps(10):
@@ -83,6 +88,18 @@ def main():
                     tf.contrib.summary.scalar('grads_var%d' % (i+1), grads_vars[i])
 
         print("epoch %2d\tbatch %4d\tloss %f\taccuracy %f" % (epoch+1, batch+1, loss, accuracy))
+
+    for l_epoch in range(100):
+        print("langevin epoch %d" % (l_epoch+1))
+        train_dataset_iter = train_dataset.shuffle(train_dataset_size).batch(hparams.batch_size)
+
+        for batch, data in enumerate(train_dataset_iter):
+            visualizer.store_results(nn)
+            nn.update(data["data"], data["label"], epsilon, train_dataset_size)
+
+    # visualize
+    result = visualizer.retrieve_results()
+    print(result)
 
 if __name__ == "__main__":
     main()
