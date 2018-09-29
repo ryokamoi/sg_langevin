@@ -10,10 +10,16 @@ This is not the original implementation.
  * See pip.freeze for details
 
 ## Usage
+### Logistic regression
 
 ```sh
 python main.py --hparams params/SGLD_LR
 ```
+
+## Results
+### Logistic regression
+
+![](images/sgld-lr.png)
 
 ## Author
 

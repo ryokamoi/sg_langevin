@@ -36,7 +36,7 @@ def main():
     hparams = tf.contrib.training.HParams(
                 lr=0.1,
                 model="SGLD_LR",
-                epoch=30,
+                epoch=10,
                 batch_size=10)
 
     if args.hparams:
@@ -87,10 +87,10 @@ def main():
                 for i in range(len(grads_vars)):
                     tf.contrib.summary.scalar('grads_var%d' % (i+1), grads_vars[i])
 
-        print("epoch %2d\tbatch %4d\tloss %f\taccuracy %f" % (epoch+1, batch+1, loss, accuracy))
+        print("epoch %3d\tbatch %4d\tloss %.4f\taccuracy %.4f" % (epoch+1, batch+1, loss, accuracy))
 
     for l_epoch in range(100):
-        print("langevin epoch %d" % (l_epoch+1))
+        print("langevin epoch %3d" % (l_epoch+1))
         train_dataset_iter = train_dataset.shuffle(train_dataset_size).batch(hparams.batch_size)
 
         for batch, data in enumerate(train_dataset_iter):
@@ -98,8 +98,7 @@ def main():
             nn.update(data["data"], data["label"], epsilon, train_dataset_size)
 
     # visualize
-    result = visualizer.retrieve_results()
-    print(result)
+    visualizer.save_results(logdir, train_dataset)
 
 if __name__ == "__main__":
     main()
