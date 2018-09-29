@@ -31,10 +31,10 @@ class SGLD_LR(tf.keras.Model):
 		grads = self.gradient(input, label)
 		for i, g in enumerate(grads):
 			grads[i] *= dataset_len / self.hparams.batch_size
-			prior_grads = tf.sign(self.variables[i])
+			prior_grads = -tf.sign(self.variables[i])
 			noize = tf.random_normal(
 						grads[i].shape,
-						stddev=epsilon
+						stddev=tf.sqrt(epsilon)
 					)
 			grads[i] = (grads[i] + prior_grads) * epsilon / 2 + noize
 
